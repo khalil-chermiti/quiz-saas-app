@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { createClient } from "@/utils/supabaseClient";
 import { DeleteIcon } from "@/components/DeleteIcon";
 
@@ -12,16 +13,41 @@ type Question = {
   correct: number[];
 };
 
-export default function CreateQuizPage() {
+export default function UpdateQuizPage() {
   const router = useRouter();
+  const params = useParams();
   const supabase = createClient();
+  const quizId = params.id;
 
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [questions, setQuestions] = useState<Question[]>([
-    { id: Date.now(), text: "", options: ["", ""], correct: [] },
-  ]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [error, setError] = useState<string>("");
+
+  // Load quiz
+  useEffect(() => {
+    const fetchQuiz = async () => {
+      const { data } = await supabase
+        .from("quizzes")
+        .select("title, description, content")
+        .eq("id", quizId)
+        .single();
+
+      if (data) {
+        setTitle(data.title);
+        setDescription(data.description);
+        setQuestions(
+          data.content.questions.map((q: any) => ({
+            id: q.id,
+            text: q.text,
+            options: q.options,
+            correct: q.correct,
+          }))
+        );
+      }
+    };
+    fetchQuiz();
+  }, [quizId, supabase]);
 
   const addQuestion = (): void => {
     setQuestions([...questions, { id: Date.now(), text: "", options: ["", ""], correct: [] }]);
@@ -105,18 +131,14 @@ export default function CreateQuizPage() {
     return true;
   };
 
-  const saveQuiz = async (): Promise<void> => {
+  const updateQuiz = async (): Promise<void> => {
     if (!validateQuiz()) return;
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    await supabase.from("quizzes").insert({
-      user_id: user.id,
+    await supabase.from("quizzes").update({
       title,
       description,
       content: { questions },
-    });
+    }).eq("id", quizId);
 
     router.push("/dashboard");
   };
@@ -125,12 +147,12 @@ export default function CreateQuizPage() {
     <div className="min-h-screen bg-gray-50 relative p-6">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Create Quiz</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Update Quiz</h1>
           <button
-            onClick={saveQuiz}
+            onClick={updateQuiz}
             className="px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition font-medium cursor-pointer"
           >
-            Save Quiz
+            Update Quiz
           </button>
         </div>
 
@@ -183,9 +205,7 @@ export default function CreateQuizPage() {
                 <label className="flex items-center gap-1">
                   <input
                     type="checkbox"
-                    className="
-                    form-checkbox h-5 w-5 rounded cursor-pointer
-                    "
+                    className="form-checkbox h-5 w-5 rounded cursor-pointer"
                     checked={q.correct.includes(i)}
                     onChange={e => toggleCorrect(q.id, i, e.target.checked)}
                   />

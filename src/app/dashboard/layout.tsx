@@ -3,6 +3,8 @@ import { createClient } from "@/utils/supabaseServer";
 import { signOutAction } from "@/actions/signout";
 import Avvvatars from "avvvatars-react";
 import Link from "next/link";
+import { LogoutIcon } from "@/components/LogoutIcon";
+import { HomeIcon } from "@/components/HomeIcon";
 
 export default async function Layout({
   children,
@@ -48,16 +50,21 @@ export default async function Layout({
             <div className="flex items-center gap-4">
               <Link
                 href="/dashboard"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition font-medium cursor-pointer"
+                className="
+                flex items-center gap-2 bg-purple-600 text-white
+                px-4 py-2 rounded-full transition font-medium cursor-pointer"
               >
-                Quizzes
+                Quizzes <HomeIcon />
               </Link>
               <form action={signOutAction}>
                 <button
                   type="submit"
-                  className="rounded-lg bg-red-600 text-white px-4 py-2 hover:bg-red-700 transition cursor-pointer"
+                  className="
+                  flex items-center gap-2
+                  rounded-lg px-4 py-2 text-red-600 transition cursor-pointer"
                 >
-                  Sign Out
+                  <span>Log out</span>
+                  <LogoutIcon />
                 </button>
               </form>
             </div>
