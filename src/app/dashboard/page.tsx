@@ -15,12 +15,29 @@ export default async function DashboardPage() {
     .from("quizzes")
     .select("id, title, created_at, content")
     .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
+    .order("created_at", { ascending: false });
 
-  const fakeResponses = (quizId: string) => {
-    const seed = quizId.length;
-    return (seed * 7) % 12;
-  };
+  // fetch all responses for the user’s quizzes
+  const quizIds = quizzes?.map((q) => q.id) || [];
+
+  let responseCounts: Record<string, number> = {};
+
+  if (quizIds.length > 0) {
+    const { data: allResponses } = await supabase
+      .from("quiz_responses")
+      .select("quiz_id")
+      .in("quiz_id", quizIds);
+
+    responseCounts = quizIds.reduce((acc, id) => {
+      acc[id] = allResponses?.filter((r) => r.quiz_id === id).length || 0;
+      return acc;
+    }, {} as Record<string, number>);
+  }
+
+  const totalResponses = Object.values(responseCounts).reduce(
+    (a, b) => a + b,
+    0
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -48,9 +65,7 @@ export default async function DashboardPage() {
         </div>
         <div className="p-6 bg-white rounded-2xl shadow-md">
           <p className="text-gray-500 text-sm">Total Responses</p>
-          <h2 className="text-2xl font-bold mt-1">
-            {quizzes?.reduce((acc, q) => acc + fakeResponses(q.id), 0) || 0}
-          </h2>
+          <h2 className="text-2xl font-bold mt-1">{totalResponses}</h2>
         </div>
         <div className="p-6 bg-white rounded-2xl shadow-md">
           <p className="text-gray-500 text-sm">Last Quiz Added</p>
@@ -69,7 +84,7 @@ export default async function DashboardPage() {
               id={quiz.id}
               title={quiz.title}
               created_at={quiz.created_at}
-              responses={fakeResponses(quiz.id)}
+              responses={responseCounts[quiz.id] || 0}
             />
           ))
         ) : (
