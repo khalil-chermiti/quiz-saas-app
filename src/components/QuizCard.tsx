@@ -61,18 +61,22 @@ export default function QuizCard({
           className="
           flex items-center gap-2
           cursor-pointer p-2 hover:bg-gray-200 rounded-full"
-          onClick={() => alert("Link clicked")}
+          onClick={() => {
+            const url = `${window.location.origin}/quiz/${id}`;
+            navigator.clipboard.writeText(url);
+          }}
         >
-          <LinkIcon /> link
+          <LinkIcon /> Link
         </button>
-        <button
+
+        <Link
+          href={`/dashboard/quiz/stats/${id}`}
           className="
           flex items-center gap-2
           cursor-pointer p-2 hover:bg-gray-200 rounded-full"
-          onClick={() => alert("Pie chart clicked")}
         >
           <PieChartIcon /> stats
-        </button>
+        </Link>
         <button
           className="
           flex items-center gap-2
