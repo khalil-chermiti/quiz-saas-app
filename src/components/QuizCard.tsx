@@ -23,6 +23,7 @@ export default function QuizCard({
 }: QuizCardProps) {
   const supabase = createClient();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const daysAgo = (date: string) => {
     const now = new Date();
@@ -40,63 +41,53 @@ export default function QuizCard({
     window.location.reload();
   };
 
-  const publishQuiz = () => {
-    alert("Publish button clicked");
+  const copyLink = () => {
+    const url = `${window.location.origin}/quiz/${id}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-xl transition relative">
-      <h2 className="font-semibold text-lg mb-2">{title}</h2>
-      <p className="text-gray-600 mb-2">Responses: {responses}</p>
+    <div className="bg-linear-to-br from-white to-purple-50 rounded-2xl shadow-lg p-6 hover:shadow-2xl transition relative">
+      <h2 className="font-bold text-xl text-purple-800 mb-1 truncate">
+        {title}
+      </h2>
+      <p className="text-gray-600 mb-1">Responses: {responses}</p>
       <p className="text-gray-400 text-sm mb-4">{daysAgo(created_at)}</p>
 
       {/* Pill-shaped icon container */}
-      <div
-        className="
-        w-full
-        flex items-center justify-around gap-3 bg-gray-100 rounded-full 
-        px-3 py-1"
-      >
+      <div className="flex items-center justify-around gap-3 bg-purple-100/30 rounded-full px-3 py-2">
         <button
-          className="
-          flex items-center gap-2
-          cursor-pointer p-2 hover:bg-gray-200 rounded-full"
-          onClick={() => {
-            const url = `${window.location.origin}/quiz/${id}`;
-            navigator.clipboard.writeText(url);
-          }}
+          className="flex items-center gap-2 cursor-pointer p-2 hover:bg-purple-200 rounded-full transition"
+          onClick={copyLink}
         >
-          <LinkIcon /> Link
+          <LinkIcon /> {copied ? "Copied!" : "Link"}
         </button>
 
         <Link
           href={`/dashboard/quiz/stats/${id}`}
-          className="
-          flex items-center gap-2
-          cursor-pointer p-2 hover:bg-gray-200 rounded-full"
+          className="flex items-center gap-2 cursor-pointer p-2 hover:bg-purple-200 rounded-full transition"
         >
-          <PieChartIcon /> stats
+          <PieChartIcon /> Stats
         </Link>
+
         <button
-          className="
-          flex items-center gap-2
-          cursor-pointer p-2 hover:bg-gray-200 rounded-full"
+          className="flex items-center gap-2 cursor-pointer p-2 hover:bg-red-200 rounded-full transition"
           onClick={deleteQuiz}
           disabled={isDeleting}
         >
-          <DeleteIcon /> delete
+          <DeleteIcon /> Delete
         </button>
       </div>
 
+      {/* Edit button */}
       <Link
         href={`/dashboard/quiz/edit/${id}`}
-        className="
-        absolute top-5 right-5 transition cursor-pointer
-        justify-end flex items-center rounded-full px-2 py-1  hover:bg-gray-100
-        bg-white/70 backdrop-blur-md border border-gray-200 shadow-sm"
+        className="absolute top-5 right-5 transition cursor-pointer justify-end flex items-center rounded-full px-3 py-1 bg-white/90 backdrop-blur-sm border border-purple-200 shadow-md hover:bg-purple-50"
       >
         <EditIcon />
-        <span className="p-1">Edit</span>
+        <span className="ml-1 text-purple-700 font-medium">Edit</span>
       </Link>
     </div>
   );

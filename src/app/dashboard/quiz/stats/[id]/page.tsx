@@ -49,26 +49,40 @@ export default function QuizStatsPage() {
     loadStats();
   }, [quizId]);
 
+  const totalResponses = responses.length;
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   if (loading) {
     return (
-      <div className="p-6 text-center text-gray-600">
-        Loading statistics...
-      </div>
+      <div className="p-6 text-center text-gray-600">Loading statistics...</div>
     );
   }
 
-  const totalResponses = responses.length;
-
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4">{title} — Stats</h1>
-        <p className="text-gray-600 mb-8">
-          Total submissions: <strong>{totalResponses}</strong>
+    <div className="min-h-screen bg-linear-to-br from-purple-50 to-white p-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-purple-800">
+            {title} — Stats
+          </h1>
+          <button
+            onClick={handlePrint}
+            className="px-4 py-2 bg-indigo-500 text-white rounded-full shadow hover:bg-indigo-600 transition"
+          >
+            Print Stats
+          </button>
+        </div>
+
+        <p className="text-gray-700 mb-8 text-lg">
+          Total submissions:{" "}
+          <span className="font-semibold">{totalResponses}</span>
         </p>
 
         {questions.map((q) => {
-          // For this question, accumulate stats
+          // Compute stats per question
           const optionCounts = Array(q.options.length).fill(0);
           let answeredCount = 0;
 
@@ -77,9 +91,8 @@ export default function QuizStatsPage() {
             if (ans && ans.length > 0) {
               answeredCount++;
               ans.forEach((optIndex: number) => {
-                if (optionCounts[optIndex] !== undefined) {
+                if (optionCounts[optIndex] !== undefined)
                   optionCounts[optIndex]++;
-                }
               });
             }
           }
@@ -87,16 +100,18 @@ export default function QuizStatsPage() {
           return (
             <div
               key={q.id}
-              className="mb-8 p-6 bg-white rounded-xl shadow-lg"
+              className="mb-8 p-6 bg-white rounded-2xl shadow-lg border border-purple-100 hover:shadow-2xl transition"
             >
-              <h2 className="text-xl font-semibold mb-4">{q.text}</h2>
+              <h2 className="text-xl font-semibold mb-4 text-purple-700">
+                {q.text}
+              </h2>
 
-              <p className="text-gray-600 mb-3">
+              <p className="text-gray-600 mb-4">
                 People who answered:{" "}
-                <strong>{answeredCount}</strong>
+                <span className="font-semibold">{answeredCount}</span>
               </p>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {q.options.map((opt, i) => {
                   const count = optionCounts[i];
                   const percentage =
@@ -107,17 +122,15 @@ export default function QuizStatsPage() {
                   return (
                     <div
                       key={i}
-                      className="p-3 border rounded-xl bg-gray-50"
+                      className="p-3 rounded-xl bg-linear-to-r from-purple-50 to-white shadow-inner"
                     >
-                      <p className="font-medium">{opt}</p>
-
-                      <div className="mt-1 w-full bg-gray-200 h-3 rounded-full">
+                      <p className="font-medium text-gray-800 mb-2">{opt}</p>
+                      <div className="relative w-full h-4 bg-gray-200 rounded-full overflow-hidden">
                         <div
-                          className="h-3 bg-purple-600 rounded-full transition-all"
+                          className="absolute top-0 left-0 h-4 bg-linear-to-r from-purple-500 via-pink-500 to-indigo-500 rounded-full transition-all"
                           style={{ width: `${percentage}%` }}
                         ></div>
                       </div>
-
                       <p className="text-sm text-gray-600 mt-1">
                         {count} responses ({percentage}%)
                       </p>

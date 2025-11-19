@@ -38,7 +38,6 @@ export default function QuizAnswerPage() {
         setQuestions(data.content.questions);
       }
     };
-
     loadQuiz();
   }, [quizId, supabase]);
 
@@ -70,7 +69,7 @@ export default function QuizAnswerPage() {
     setScore(points);
     setSubmitted(true);
 
-    // ---- SAVE TO quiz_responses ----
+    // Save answers
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -78,21 +77,25 @@ export default function QuizAnswerPage() {
     await supabase.from("quiz_responses").insert({
       quiz_id: quizId,
       user_id: user ? user.id : null,
-      answers: answers,
+      answers,
     });
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">{title}</h1>
-        <p className="text-gray-600 mb-6">{description}</p>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 p-6">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-extrabold text-purple-800 mb-3">
+          {title}
+        </h1>
+        <p className="text-gray-700 mb-8 text-lg">{description}</p>
 
         {submitted ? (
-          <div className="p-6 bg-white shadow-lg rounded-xl text-center">
-            <h2 className="text-2xl font-bold mb-2">Your Score</h2>
-            <p className="text-lg">
-              {score} / {questions.length}
+          <div className="p-8 bg-white shadow-xl rounded-3xl text-center border-t-8 border-purple-600 animate-fadeIn">
+            <h2 className="text-3xl font-bold mb-4 text-purple-700">
+              Your Score
+            </h2>
+            <p className="text-xl">
+              {score} / {questions.length} correct
             </p>
           </div>
         ) : (
@@ -100,46 +103,50 @@ export default function QuizAnswerPage() {
             {questions.map((q, qi) => (
               <div
                 key={q.id}
-                className="mb-6 bg-white p-6 shadow-lg rounded-xl"
+                className="mb-8 p-6 bg-white shadow-xl rounded-3xl hover:shadow-2xl transition-transform transform hover:-translate-y-1"
               >
-                <h3 className="font-semibold mb-3">
+                <h3 className="font-semibold text-2xl mb-4">
                   {qi + 1}. {q.text}
                 </h3>
 
-                {q.options.map((option, i) => {
-                  const isMultiple = q.correct.length > 1;
+                <div className="space-y-3">
+                  {q.options.map((option, i) => {
+                    const isMultiple = q.correct.length > 1;
+                    const checked = (answers[q.id] || []).includes(i);
 
-                  return (
-                    <label
-                      key={i}
-                      className="flex items-center gap-3 p-2 border rounded-xl cursor-pointer mb-2"
-                    >
-                      <input
-                        type={isMultiple ? "checkbox" : "radio"}
-                        name={`q-${q.id}`}
-                        checked={(answers[q.id] || []).includes(i)}
-                        onChange={(e) => {
-                          if (isMultiple) {
-                            toggleAnswer(q.id, i, e.target.checked);
-                          } else {
-                            setAnswers((prev) => ({
-                              ...prev,
-                              [q.id]: [i],
-                            }));
-                          }
-                        }}
-                        className="h-5 w-5"
-                      />
-                      {option}
-                    </label>
-                  );
-                })}
+                    return (
+                      <label
+                        key={i}
+                        className={`flex items-center gap-4 p-3 border rounded-2xl cursor-pointer transition
+                          ${checked ? "bg-purple-100 border-purple-300" : "hover:bg-purple-50"}
+                        `}
+                      >
+                        <input
+                          type={isMultiple ? "checkbox" : "radio"}
+                          name={`q-${q.id}`}
+                          checked={checked}
+                          onChange={(e) => {
+                            if (isMultiple) {
+                              toggleAnswer(q.id, i, e.target.checked);
+                            } else {
+                              setAnswers((prev) => ({ ...prev, [q.id]: [i] }));
+                            }
+                          }}
+                          className="h-5 w-5 accent-purple-600"
+                        />
+                        <span className="text-gray-800 font-medium">
+                          {option}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
             ))}
 
             <button
               onClick={submitQuiz}
-              className="px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition cursor-pointer"
+              className="px-6 py-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 shadow-lg transition text-lg font-semibold w-full md:w-auto"
             >
               Submit Quiz
             </button>
