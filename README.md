@@ -27,16 +27,20 @@ npm install
 yarn install
 # or
 pnpm install
+```
 
 Run the development server:
 
+```
 npm run dev
 # or
 yarn dev
 # or
 pnpm run dev
+```
 
 open in your browser:
+
 http://localhost:3000
 
 The app is deployed on Render:
