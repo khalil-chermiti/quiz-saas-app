@@ -6,6 +6,8 @@ import { EditIcon } from "./EditIcon";
 import { LinkIcon } from "./LinkIcon";
 import { PieChartIcon } from "./PieChartIcon";
 import { DeleteIcon } from "./DeleteIcon";
+import { QRCodeIcon } from "./QRCodeIcon";
+import QRCode from "react-qr-code";
 import Link from "next/link";
 
 type QuizCardProps = {
@@ -24,6 +26,7 @@ export default function QuizCard({
   const supabase = createClient();
   const [isDeleting, setIsDeleting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
   const daysAgo = (date: string) => {
     const now = new Date();
@@ -41,8 +44,9 @@ export default function QuizCard({
     window.location.reload();
   };
 
+  const url = `${typeof window !== "undefined" ? window.location.origin : ""}/quiz/${id}`;
+
   const copyLink = () => {
-    const url = `${window.location.origin}/quiz/${id}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
@@ -56,10 +60,9 @@ export default function QuizCard({
       <p className="text-gray-600 mb-1">Responses: {responses}</p>
       <p className="text-gray-400 text-sm mb-4">{daysAgo(created_at)}</p>
 
-      {/* Pill-shaped icon container */}
-      <div className="flex items-center justify-around gap-3 bg-purple-100/30 rounded-full px-3 py-2">
+      <div className="flex flex-row items-center justify-between gap-1 bg-purple-100/30 rounded-full px-3 py-2">
         <button
-          className="flex items-center gap-2 cursor-pointer p-2 hover:bg-purple-200 rounded-full transition"
+          className="flex items-center gap-1 cursor-pointer p-1 hover:bg-purple-200 rounded-full transition whitespace-nowrap"
           onClick={copyLink}
         >
           <LinkIcon /> {copied ? "Copied!" : "Link"}
@@ -67,13 +70,20 @@ export default function QuizCard({
 
         <Link
           href={`/dashboard/quiz/stats/${id}`}
-          className="flex items-center gap-2 cursor-pointer p-2 hover:bg-purple-200 rounded-full transition"
+          className="flex items-center gap-1 cursor-pointer p-2 hover:bg-purple-200 rounded-full transition whitespace-nowrap"
         >
           <PieChartIcon /> Stats
         </Link>
 
         <button
-          className="flex items-center gap-2 cursor-pointer p-2 hover:bg-red-200 rounded-full transition"
+          className="flex items-center gap-1 cursor-pointer p-2 hover:bg-purple-200 rounded-full transition whitespace-nowrap"
+          onClick={() => setShowQR(true)}
+        >
+          <QRCodeIcon /> QR
+        </button>
+
+        <button
+          className="flex items-center gap-1 cursor-pointer p-2 hover:bg-red-200 rounded-full transition whitespace-nowrap"
           onClick={deleteQuiz}
           disabled={isDeleting}
         >
@@ -81,7 +91,27 @@ export default function QuizCard({
         </button>
       </div>
 
-      {/* Edit button */}
+      {showQR && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-6 rounded-2xl shadow-2xl relative w-[280px]">
+            <button
+              className="absolute -top-3 -right-3 bg-white border border-gray-300 rounded-full px-3 py-1 shadow"
+              onClick={() => setShowQR(false)}
+            >
+              ✕
+            </button>
+
+            <h3 className="text-center font-semibold text-purple-700 mb-3 truncate">
+              {title}
+            </h3>
+
+            <div className="flex justify-center">
+              <QRCode value={url} size={300} />
+            </div>
+          </div>
+        </div>
+      )}
+
       <Link
         href={`/dashboard/quiz/edit/${id}`}
         className="absolute top-5 right-5 transition cursor-pointer justify-end flex items-center rounded-full px-3 py-1 bg-white/90 backdrop-blur-sm border border-purple-200 shadow-md hover:bg-purple-50"
